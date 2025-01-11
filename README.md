@@ -63,9 +63,9 @@ df.head(5)
 ```
 ![image](https://github.com/user-attachments/assets/03d7d913-d752-41ab-9c37-de7c6e2bcec0)
 
-수치형 변수에는 RobustScaler를, 범주형 변수에는 원-핫 인코딩을 적용해서 예측에 사용할 최종 데이터 프레임을 생성했습니다.
+수치형 변수에는 RobustScaler를 적용하고 범주형 변수인 창업 성공 등급은 어떤 순서를 의미하는 값이 아니기 때문에 LabelEncoder를 적용해서 'A'는 0, 'B'는 1, ... , 'E'는 4로 변환했습니다. 예측에 사용할 최종 데이터 프레임을 생성했습니다.
 ```
-comp
+
 ```
 ![image](https://github.com/user-attachments/assets/7760b4b5-06b5-48c8-b9fa-846a445c6524)
 
