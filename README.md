@@ -147,7 +147,8 @@ def base_model3():
     return model
 ```
 
-<div style="display: flex; justify-content: space-between;">
-  <img src="./img/2.png" width="50%">
-  <img src="./img/3.png" width="50%">
+<div style="display: flex;">
+  <img src="./img/2.png" width="45%" style="margin-right: 10px;">
+  <img src="./img/3.png" width="45%">
 </div>
+
