@@ -147,8 +147,70 @@ def base_model3():
     return model
 ```
 
+다음 그림은 두 번째와 세 번째 base model에 대한 성능 결과입니다.
 <div style="display: flex;">
   <img src="./img/2.png" width="45%" style="margin-right: 10px;">
   <img src="./img/3.png" width="45%">
 </div>
+L2 규제에 드롭아웃까지 적용하니 우려하던 현상이 발생하였습니다. 이에, 다음 base model에는 드롭아웃을 제외하고 L2 규제만 적용하였습니다. 첫 번째 base model과 L2 규제 + 배치 정규화를 적용한 두 번째 base model의 결과를 비교한 결과, 데이터 셋을 고려했을 때 두 번째 모델(드롭아웃을 사용하지 않는 모델)이 더 작합하다고 판단하였습니다.
+
+단, 활성화 함수를 ReLU에서 LeakyReLU로 변경하였습니다. ReLU는 ReLU(x) = max(0, x)으로 x가 0보다 작거나 같으면 0을 다음 계층으로 출력하기 때문에 역전파 과정에서 기울기 소실이 발생했을 수도 있습니다. LeakyReLU(x) = madx(ax, x)이므로 기울기 소실 현상을 방지할 수 있습니다. 이때, a = 0.2를 사용했습니다.
+
+네 번째 base model은 다음과 같습니다. 
+```
+def base_model4():
+    initializer = tf.keras.initializers.HeNormal(seed = 42)
+    
+    inputs = tf.keras.layers.Input(shape=(n_features,))
+    x = tf.keras.layers.Dense(61, kernel_regularizer = regularizer, kernel_initializer=initializer)(inputs)
+    x = tf.keras.layers.BatchNormalization()(x)
+    x = tf.keras.layers.LeakyReLU(alpha = 0.2)(x)
+    x = tf.keras.layers.Dense(16, kernel_regularizer = regularizer, kernel_initializer=initializer)(x)    
+    outputs = tf.keras.layers.Dense(5, activation = 'softmax')(x)
+    
+    model = tf.keras.Model(inputs, outputs, name = 'base_model4')
+    return model
+```
+
+다음 그림은 첫 번재 base model과 네 번째 base model의 성능입니다. 모델이 많이 개선된 것을 확인할 수 있습니다.
+<div style="display: flex;">
+  <img src="./img/1.png" width="45%" style="margin-right: 10px;">
+  <img src="./img/4.png" width="45%">
+</div>
+
+네 번째 base model을 최종 모델로 선정하였습니다. 해당 모델에 조기 종료를 설정하고 epoch을 더 길게하여 학습을 수행했습니다.
+```
+# 학습이 끝난 후, 모델의 가중치 중 가장 좋았을 때의 가중치로 복원
+# False면 마지막 시점의 가중치가 적용된다.
+early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss',  
+                                                  patience=30, 
+                                                  mode = 'min', restore_best_weights=True) 
+```
+
+```
+model_4 = base_model4()
+model_4.compile(optimizer = 'Adam',  loss = 'sparse_categorical_crossentropy', metrics=['accuracy'])
+model_4.fit(X_train, y_train, validation_data=(X_valid, y_valid), epochs=100, callbacks=[early_stopping])
+```
+
+30번의 epoch 동안 val_loss의 값이 최솟값으로 갱신되지 않아 epoch 58에서 학습이 종료되었습니다. restore_best_weights=True를 설정하였기 때문에 학습 종료 후, 가장 성능이 좋았던(검증 손실이 가장 낮았던) 시점의 모델 가중치를 복원합니다.
+
+valid set에 대해 약 85~86%의 정확도를 가지는 것을 확인할 수 있습니다.
+<img src="./img/5.png" width="50%">
+
+이제 unseen data인 test set에 대해 모델을 평가하였습니다.
+```
+score=model_4.evaluate(X_test,y_test)
+print('%s: %.2f%%' %(model_4.metrics_names[1],score[1]*100))
+```
+그 결과, 다음과 같이 약 86%의 정확도를 보이는 것을 확인할 수 있습니다.
+![image](https://github.com/user-attachments/assets/c859696f-59b9-49e9-aab5-4b2ed0ac90cc)
+
+최종 선정한 모델을 저장합니다.
+```
+model_4.save('model_4.h5')
+```
+
+
+
 
