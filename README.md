@@ -226,5 +226,5 @@ cm = confusion_matrix(y_true, y_pred_classes)
 
 <img src="./img/6.png" width="50%">
 
-<img src="./img/7.JPG" width="30%">
+<img src="./img/7.JPG" width="40%">
 모델은 정반적으로 양호한 성능을 보입니다. 클래스 0(등급 'A')와 클래스 4(등급 'E')에 대한 성능이 우수합니다. 클래스 3(등급 'D')는 다른 클래스에 비해 recall이 낮으므로, 실제 클래스 3을 놓치는 경우가 다른 클래스에 비해 더 많다는 것을 확인할 수 있습니다.
