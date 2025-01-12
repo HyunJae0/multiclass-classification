@@ -59,13 +59,22 @@ df.columns
 ```
 df.head(5)
 ```
-![image](https://github.com/user-attachments/assets/03d7d913-d752-41ab-9c37-de7c6e2bcec0)
+![image](https://github.com/user-attachments/assets/ea9d27c6-a1a7-4f03-ac2a-34e21655401a)
+
 
 수치형 변수에는 RobustScaler를 적용하고 범주형 변수인 창업 성공 등급은 어떤 순서를 의미하는 값이 아니기 때문에 LabelEncoder를 적용해서 'A'는 0, 'B'는 1, ... , 'E'는 4로 변환했습니다. 예측에 사용할 최종 데이터 프레임을 생성했습니다.
 ```
+comp
+```
+![image](https://github.com/user-attachments/assets/d2ed2eca-a645-4cc7-a77b-dace464a2936)
 
 ```
-![image](https://github.com/user-attachments/assets/7760b4b5-06b5-48c8-b9fa-846a445c6524)
+from sklearn.preprocessing import LabelEncoder
+encoder = LabelEncoder()
+comp['target'] = encoder.fit_transform(comp['창업성공등급'])
+```
 
 ## 2. Modeling
+아래 Jupyter Notebook으로 기술되어 있음
+https://github.com/HyunJae0/tensorflow-multiclass-classification/blob/main/tensorflow_multiple_classification.ipynb
 
