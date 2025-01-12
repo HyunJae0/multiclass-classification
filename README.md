@@ -96,11 +96,58 @@ def base_model():
     return model
 ```
 
-첫 번째 모델의 성능은 다음과 같습니다.
+첫 번째 base model의 성능은 다음과 같습니다.
 ```
 model_1.compile(optimizer = 'Adam',
                 loss = 'sparse_categorical_crossentropy', # 타겟이 0, 1, 2 정수로 인코딩되어 있으므로
                 metrics=['accuracy'])
 model_1.fit(X_train, y_train, validation_data=(X_valid, y_valid), epochs=50)
 ```
+<img src="./img/1.png" width="50%">
 
+학습을 시작한 지 얼마 지나지 않아 과적합이 발생하는 것을 확인할 수 있습니다.
+
+과적합을 억제하고자 다음과 같이 L2 규제 + 배치 정규화 계층을 추가한 두 번째 base model과, L2 규제 + 드롭아웃 + 배치 정규화 계층을 추가한 세 번째 base model을 정의하였습니다.
+
+드롭아웃 계층을 포함한 모델을 별도로 정의한 이유는, 드롭아웃이 학습 과정과 테스트 과정에서 다른 방식으로 동작하기 때문입니다. 
+
+학습 과정에서 일부 뉴런을 무작위로 비활성화하여 모델이 특정 뉼너에 의존하지 않고 일반화된 특성을 학습하도록 합니다. 반면, 테스트 과정에서는 모든 뉴런을 활성화하여 성능을 평가합니다.
+
+이러한 특성 때문에, 학습 데이터 수가 적은 상황에서는 드롭아웃이 오히려 검증/테스트 셋보다 학습 데이터 셋이 적은 수로 학습하여 검증/테스트 셋의 성능이 높게 나타날 수 있습니다. 
+```
+regularizer=tf.keras.regularizers.l2(0.001)
+def base_model2():
+    initializer = tf.keras.initializers.HeNormal(seed = 42)
+    
+    inputs = tf.keras.layers.Input(shape=(n_features,))
+    x = tf.keras.layers.Dense(61, kernel_regularizer = regularizer, kernel_initializer=initializer)(inputs)
+    x = tf.keras.layers.BatchNormalization()(x)
+    x = tf.keras.layers.Activation('relu')(x)
+    x = tf.keras.layers.Dense(16, kernel_regularizer = regularizer, kernel_initializer=initializer)(x)    
+    outputs = tf.keras.layers.Dense(5, activation = 'softmax')(x)
+    
+    model = tf.keras.Model(inputs, outputs, name = 'base_model2')
+    return model
+```
+
+```
+def base_model3():
+    initializer = tf.keras.initializers.HeNormal(seed = 42)
+    
+    inputs = tf.keras.layers.Input(shape=(n_features,))
+    x = tf.keras.layers.Dense(61, kernel_regularizer = regularizer, kernel_initializer=initializer)(inputs)
+    x = tf.keras.layers.BatchNormalization()(x)
+    x = tf.keras.layers.Activation('relu')(x)
+    # 데이터 수가 적기 때문에 드롭아웃 추가 시, 정확도 train set이 valid set 성능보다 떨어질 수 있으므로 조금만 적용
+    x = tf.keras.layers.Dropout(0.2)(x)
+    x = tf.keras.layers.Dense(16, kernel_regularizer = regularizer, kernel_initializer=initializer)(x)
+    outputs = tf.keras.layers.Dense(5, activation = 'softmax')(x)
+    
+    model = tf.keras.Model(inputs, outputs, name = 'base_model3')
+    return model
+```
+
+<div style="display: flex; justify-content: space-between;">
+  <img src="./img/2.png" width="50%">
+  <img src="./img/3.png" width="50%">
+</div>
