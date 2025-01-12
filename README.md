@@ -72,9 +72,35 @@ comp
 from sklearn.preprocessing import LabelEncoder
 encoder = LabelEncoder()
 comp['target'] = encoder.fit_transform(comp['창업성공등급'])
+comp[['target']].value_counts()
 ```
+![image](https://github.com/user-attachments/assets/97c3d82b-e9c1-4e7e-b9b8-29b8b5e9ad69)
 
 ## 2. Modeling
 아래 Jupyter Notebook으로 기술되어 있음
 https://github.com/HyunJae0/tensorflow-multiclass-classification/blob/main/tensorflow_multiple_classification.ipynb
+
+예측에 사용된 데이터는 총 9,063개로 비교적 작은 규모에 해당합니다. 그러나 데이터 개수에 비해 독립 변수는 473개로 많아, 머신 러닝 알고리즘을 사용할 경우 과적합이 발생할 가능성이 높습니다. 
+
+그러므로 아주 작은 블록부터 시작해 모델 성능을 점검하며 개선해 나가는 방식을 채택했습니다. 이를 위해 딥러닝 프레임워크인 TensorFlow를 이용해 기본 모델(Base Model)을 생성한 뒤, 해당 모델의 성능을 확인하며, 점진적으로 개선하는 접근 방식을 선택했습니다.
+
+첫 번째 기본 모델은 다음과 같습니다. input → Affine → Activation → Affine → Activation → Affine → Softmax 계층으로 구성된 간단한 완전연결계층입니다. 활성화 함수로 ReLU를 사용하기 때문에 가중치 초깃값은 He normal을 사용했습니다. 모델을 재사용하고자 함수로 모델을 정의하였습니다.
+```
+def base_model():
+    initializer = tf.keras.initializers.HeNormal(seed = 42)
+    inputs = tf.keras.layers.Input(shape=(n_features,))
+    x1 = tf.keras.layers.Dense(255, activation = 'relu', kernel_initializer=initializer)(inputs)
+    x2 = tf.keras.layers.Dense(125, activation = 'relu', kernel_initializer=initializer)(x1)
+    outputs = tf.keras.layers.Dense(5, activation = 'softmax')(x2)
+    model = tf.keras.Model(inputs, outputs, name = 'base_model')
+    return model
+```
+
+첫 번째 모델의 성능은 다음과 같습니다.
+```
+model_1.compile(optimizer = 'Adam',
+                loss = 'sparse_categorical_crossentropy', # 타겟이 0, 1, 2 정수로 인코딩되어 있으므로
+                metrics=['accuracy'])
+model_1.fit(X_train, y_train, validation_data=(X_valid, y_valid), epochs=50)
+```
 
