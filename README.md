@@ -33,6 +33,7 @@ TensorFlow
 
 프로젝트에서 사용한 결측치 핸들러는 R에서 제공하는 Multivariate Imputation by Chained Equations(MICE) 패키지입니다. (R에서 제공하는) MICE는 다변량 결측 데이터를 채우기 위해 여러 개의 multiple imputation(대체 값)을 생성합니다. 동작 방법은 다음 예시와 같습니다.
 ![image](https://github.com/user-attachments/assets/8848db60-42dc-49d9-ac0a-3bc61db0469b)
+
 (출처: https://www.scirp.org/journal/paperinformation?paperid=112455)
 Age, Income, Gender라는 세 개의 컬럼에 각각 결측치가 존재합니다.  먼저 각 컬럼별 평균값으로 결측치를 채웁니다. Age의 결측치는 Age 컬럼의 평균값을 이용해 채운 값입니다. Income과 Gender 컬럼에도 동일한 방법으로 결측치를 채웁니다.
 
